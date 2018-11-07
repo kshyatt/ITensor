@@ -105,16 +105,18 @@ svdBond3(int b, const Tensor& AA, Direction dir,
         Error("b+3 < r_orth_lim_");
         }
 
-    auto noise = args.getReal("Noise",0.);
-    auto cutoff = args.getReal("Cutoff",MIN_CUT);
-    auto usesvd = args.getBool("UseSVD",false);
+    //auto noise = args.getReal("Noise",0.);
+    //auto cutoff = args.getReal("Cutoff",MIN_CUT);
+    //auto usesvd = args.getBool("UseSVD",false);
 
     Spectrum res;
 
-//    if(usesvd || (noise == 0 && cutoff < 1E-12))
-//        {
-        //Need high accuracy, use svd which calls the
-        //accurate SVD method in the MatrixRef library
+    if(noise != 0)
+        {
+        Error("Noise not implemented for 3-site algorithm.");
+		}
+	else
+		{
         if(dir == Fromleft)
             { 
             Tensor D, V;
@@ -215,22 +217,7 @@ svdBond3(int b, const Tensor& AA, Direction dir,
                     }
                 }    
             }
-//        }
-//    else
-//        {
-//        //If we don't need extreme accuracy
-//        //or need to use noise term
-//        //use density matrix approach
-//        res = denmatDecomp(AA,A_[b],A_[b+1],dir,PH,args);
-//
-//        //Normalize the ortho center if requested
-//        if(args.getBool("DoNormalize",false))
-//            {
-//            Tensor& oc = (dir == Fromleft ? A_[b+1] : A_[b]);
-//            auto nrm = itensor::norm(oc);
-//            if(nrm > 1E-16) oc *= 1./nrm;
-//            }
-//        }
+		}
 
     if(dir == Fromleft)
         {
