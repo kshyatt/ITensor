@@ -684,6 +684,7 @@ toMPOImpl(AutoMPO const& am,
         for(auto r : range(row.m()))
         for(auto c : range(col.m()))
             {
+
             auto& rst = bn1.at(r).st;
             auto& cst = bn.at(c).st;
 
@@ -802,6 +803,7 @@ toMPOImpl(AutoMPO const& am,
                 }
 
             }
+
 
 #ifdef SHOW_AUTOMPO
         if(n <= 10 or n == N)
@@ -1656,7 +1658,7 @@ toExpH_ZW1(const AutoMPO& am,
 
     return H;
     }
-
+    
 template<>
 IQMPO
 toExpH<IQTensor>(const AutoMPO& a,

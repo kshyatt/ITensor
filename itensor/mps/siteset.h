@@ -117,13 +117,14 @@ class SiteBase
     IQIndex virtual
     index() const = 0;
 
-    IQTensor virtual
-    op(std::string const& opname,
-       Args const& args) const = 0;
+	IQTensor virtual
+	op(std::string const& opname,
+		Args const& args) const = 0;
 
-    IQIndexVal virtual
-    state(std::string const& state) = 0;
-    };
+ 	IQIndexVal virtual	
+   	state(std::string const& state) = 0;
+
+	};
 
 //
 // Derived "box" type with virtual methods
@@ -143,19 +144,22 @@ class SiteHolder : public SiteBase
 
     IQIndex virtual
     index() const { return s.index(); }
+	
+	// override from base class
+	IQTensor virtual
+	op(std::string const& opname,
+		Args const& args) const
+		{
+		return s.op(opname,args);
+		}
 
-    IQTensor virtual
-    op(std::string const& opname,
-       Args const& args) const
-        {
-        return s.op(opname,args);
-        }
+	// override from base class
+	IQIndexVal virtual
+	state(std::string const& state)
+		{
+		return s.state(state);
+		}
 
-    IQIndexVal virtual
-    state(std::string const& state)
-        {
-        return s.state(state);
-        }
     };
 
 class GenericSite
@@ -221,7 +225,7 @@ struct SiteStore
           std::string const& state)
         {
         if(not sites_.at(j)) Error("Unassigned site in SiteStore");
-        return sites_[j]->state(state);
+		return sites_[j]->state(state);
         }
 
     IQTensor

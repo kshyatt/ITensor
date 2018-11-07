@@ -21,7 +21,14 @@ namespace itensor {
 //   |  |     |      |      |     |      | 
 //   '----...---                ----...--'
 //
-// 
+// (Three site variation: modify nc_ and the relevant.)
+//
+//   .----...---                      ----...--.
+//   |  |     |      |     |     |      |      |
+//   W1-W2-..Wj-1 - Wj - Wj+1 - Wj+2 -- Wj+3..-WN
+//   |  |     |      |     |     |      |      |
+//   '----...---                      ----...--'
+//
 //  Here the W's are the site tensors
 //  of the MPO "Op" and the method position(j,psi)
 //  has been called using the MPS 'psi' as a basis 
@@ -64,6 +71,14 @@ class LocalMPO
              const Tensor& LH, 
              const Tensor& RH,
              const Args& args = Global::args());
+        
+    //
+    //Three-site
+    LocalMPO(const MPOt<Tensor>& H,
+             const Tensor& LH,
+             const Tensor& RH,
+             const bool threeSite,
+             const Args& args = Global::args());
 
     //
     //Use an MPS with boundary indices capped off by left and right
@@ -81,6 +96,10 @@ class LocalMPO
 
     void
     product(const Tensor& phi, Tensor& phip) const;
+    
+    //Three-site
+    void
+    product(const Tensor& phi, Tensor& phip, const bool threeSite) const;
 
     Real
     expect(const Tensor& phi) const { return lop_.expect(phi); }
@@ -295,6 +314,28 @@ LocalMPO(const MPOt<Tensor>& H,
 
 template <class Tensor>
 inline LocalMPO<Tensor>::
+LocalMPO(const MPOt<Tensor>& H,
+         const Tensor& LH, const Tensor& RH,
+         const bool threeSite,
+         const Args& args)
+    : Op_(&H),
+    PH_(H.N()+2),
+    LHlim_(0),
+    RHlim_(H.N()+1),
+    nc_(threeSite?3:2),
+    do_write_(false),
+    writedir_("."),
+    Psi_(0)
+    {
+    PH_[0] = LH;
+    PH_[H.N()+1] = RH;
+    if(H.N()==3)    lop_.update(Op_->A(1),Op_->A(2),Op_->A(3),L(),R());
+    else if(H.N()==2)    lop_.update(Op_->A(1),Op_->A(2),L(),R());
+    if(args.defined("NumCenter"))   numCenter(args.getInt("NumCenter"));
+    }
+
+template <class Tensor>
+inline LocalMPO<Tensor>::
 LocalMPO(const MPSt<Tensor>& Psi, 
          const Tensor& LP,
          const Tensor& RP,
@@ -314,29 +355,60 @@ LocalMPO(const MPSt<Tensor>& Psi,
         numCenter(args.getInt("NumCenter"));
     }
 
+//template <class Tensor> inline
+//void LocalMPO<Tensor>::
+//product(const Tensor& phi, Tensor& phip) const
+//    {
+//    if(Op_ != 0)
+//        {
+//        lop_.product(phi,phip);
+//        }
+//    else
+//    if(Psi_ != 0)
+//        {
+//        int b = position();
+//        auto othr = (!L() ? dag(prime(Psi_->A(b),Link)) : L()*dag(prime(Psi_->A(b),Link)));
+//        auto othrR = (!R() ? dag(prime(Psi_->A(b+1),Link)) : R()*dag(prime(Psi_->A(b+1),Link)));
+//        othr *= othrR;
+//        auto z = (othr*phi).cplx();
+//
+//        phip = dag(othr);
+//        phip *= z;
+//        }
+//    else
+//        {
+//        Error("LocalMPO is null");
+//        }
+//    }
+    
 template <class Tensor> inline
 void LocalMPO<Tensor>::
 product(const Tensor& phi, Tensor& phip) const
     {
-    if(Op_ != 0)
+        if(Op_ != 0)
         {
-        lop_.product(phi,phip);
+            lop_.product(phi,phip);
         }
-    else 
-    if(Psi_ != 0)
+        else
+        if(Psi_ != 0)
         {
-        int b = position();
-        auto othr = (!L() ? dag(prime(Psi_->A(b),Link)) : L()*dag(prime(Psi_->A(b),Link)));
-        auto othrR = (!R() ? dag(prime(Psi_->A(b+1),Link)) : R()*dag(prime(Psi_->A(b+1),Link)));
-        othr *= othrR;
-        auto z = (othr*phi).cplx();
+            int b = position();
+            auto othr = (!L() ? dag(prime(Psi_->A(b),Link)) : L()*dag(prime(Psi_->A(b),Link)));
+            if(nc_==3){
+                othr *= dag(prime(Psi_->A(b+1),Link));
+                othr *= (!R() ? dag(prime(Psi_->A(b+2),Link)) : R()*dag(prime(Psi_->A(b+2),Link)));
+            }
+            else{
+                othr *= (!R() ? dag(prime(Psi_->A(b+1),Link)) : R()*dag(prime(Psi_->A(b+1),Link)));
+			}
+            auto z = (othr*phi).cplx();
 
-        phip = dag(othr);
-        phip *= z;
+            phip = dag(othr);
+			phip *= z;
         }
-    else
+        else
         {
-        Error("LocalMPO is null");
+            Error("LocalMPO is null");
         }
     }
 
@@ -370,15 +442,18 @@ position(int b, const MPSType& psi)
     setRHlim(b+nc_); //not redundant since RHlim_ could be < b+nc_
 
 #ifdef DEBUG
-    if(nc_ != 2)
+    if(nc_ != 2 && nc_ !=3)
         {
-        Error("LocalOp only supports 2 center sites currently");
+        Error("LocalOp only supports 2 and 3 center sites currently");
         }
 #endif
 
     if(Op_ != 0) //normal MPO case
         {
-        lop_.update(Op_->A(b),Op_->A(b+1),L(),R());
+        if(nc_==3)
+			lop_.update(Op_->A(b),Op_->A(b+1),Op_->A(b+2),L(),R());
+        else        
+			lop_.update(Op_->A(b),Op_->A(b+1),L(),R());
         }
     }
 
@@ -420,8 +495,9 @@ shift(int j, Direction dir, const Tensor& A)
         nE *= dag(prime(A));
         setLHlim(j);
         setRHlim(j+nc_+1);
-
-        lop_.update(Op_->A(j+1),Op_->A(j+2),L(),R());
+        
+        if(nc_==3)  lop_.update(Op_->A(j+1),Op_->A(j+2),Op_->A(j+3),L(),R());
+        else        lop_.update(Op_->A(j+1),Op_->A(j+2),L(),R());
         }
     else //dir == Fromright
         {
@@ -437,8 +513,9 @@ shift(int j, Direction dir, const Tensor& A)
         nE *= dag(prime(A));
         setLHlim(j-nc_-1);
         setRHlim(j);
-
-        lop_.update(Op_->A(j-1),Op_->A(j),L(),R());
+        
+        if(nc_==3)  lop_.update(Op_->A(j-2),Op_->A(j-1),Op_->A(j),L(),R());
+        else        lop_.update(Op_->A(j-1),Op_->A(j),L(),R());
         }
     }
 
@@ -494,6 +571,7 @@ makeR(const MPSType& psi, int k)
                 const int rl = RHlim_;
                 PH_.at(rl-1) = (!PH_.at(rl) ? psi.A(rl-1) : PH_[rl]*psi.A(rl-1));
                 PH_[rl-1] *= dag(prime(Psi_->A(rl-1),Link));
+				//print(PH_[rl-1]);
                 setRHlim(RHlim_-1);
                 }
             }
@@ -603,8 +681,6 @@ initWrite()
     std::string global_write_dir = Global::args().getString("WriteDir","./");
     writedir_ = mkTempDir("PH",global_write_dir);
     }
-
+    
 } //namespace itensor
-
-
 #endif

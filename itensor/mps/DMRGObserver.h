@@ -120,16 +120,17 @@ measure(const Args& args)
                 if(p > 1E-13) S += p*log(p);
                 }
             S *= -1;
-            printfln("    vN Entropy at center bond b=%d = %.12f",N/2,S);
-            printf(  "    Eigs at center bond b=%d: ",N/2);
-            auto ten = decltype(center_eigs.size())(10);
-            for(auto j : range(std::min(center_eigs.size(),ten)))
-                {
-                auto eig = center_eigs(j);
-                if(eig < 1E-3) break;
-                printf("%.4f ",eig);
-                }
-            println();
+            //printfln("    vN Entropy at center bond b=%d = %.12f",N/2,S);
+            //printf(  "    Eigs at center bond b=%d: ",N/2);
+            //auto ten = decltype(center_eigs.size())(10);
+            //for(auto j : range(std::min(center_eigs.size(),ten)))
+            //    {
+            //    auto eig = center_eigs(j);
+            //    if(eig < 1E-3) break;
+            //    printf("%.4f ",eig);
+            //    }
+            //println();
+			printf("%d	%.12f	",sw,S);
             }
         }
 
@@ -137,13 +138,16 @@ measure(const Args& args)
     max_te = std::max(max_te,last_spec_.truncerr());
     if(b == 1 && ha == 2) 
         {
-        if(!printeigs) println();
-        println("    Largest m during sweep ",sw," was ",(max_eigs > 1 ? max_eigs : 1));
+        //if(!printeigs) println();
+        //println("    Largest m during sweep ",sw," was ",(max_eigs > 1 ? max_eigs : 1));
+		//max_eigs = -1;
+        //println("    Largest truncation error: ",(max_te > 0 ? max_te : 0.));
+		//max_te = -1;
+        //printfln("    Energy after sweep %d is %.12f",sw,energy);
+		printf("%d	%.15f	%.12f",(max_eigs > 1 ? max_eigs : 1),(max_te > 0 ? max_te : 0.),energy);
         max_eigs = -1;
-        println("    Largest truncation error: ",(max_te > 0 ? max_te : 0.));
-        max_te = -1;
-        printfln("    Energy after sweep %d is %.12f",sw,energy);
-        }
+		max_te = -1;
+		}
 
     }
 

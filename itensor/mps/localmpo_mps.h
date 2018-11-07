@@ -79,7 +79,11 @@ class LocalMPO_MPS
     doWrite() const { return lmpo_.doWrite(); }
     void
     doWrite(bool val) { lmpo_.doWrite(val); }
-
+	
+	int
+	numCenter() const { return lmpo_.numCenter(); }
+	void
+	numCenter(int val);
     };
 
 template <class Tensor>
@@ -93,7 +97,7 @@ LocalMPO_MPS(MPOt<Tensor> const& Op,
     weight_(args.getReal("Weight",1))
     { 
     lmpo_ = LocalMPOType(Op);
-
+	
     for(auto j : range(lmps_.size()))
         {
         lmps_[j] = LocalMPOType(psis[j]);
@@ -153,6 +157,17 @@ position(int b, const MPSType& psi)
         M.position(b,psi);
         }
     }
+
+template <class Tensor>
+void inline LocalMPO_MPS<Tensor>::
+numCenter(int val)
+	{
+	lmpo_.numCenter(val);
+	for(auto& M : lmps_)
+		{
+		M.numCenter(val);
+		}
+	}
 
 } //namespace itensor
 

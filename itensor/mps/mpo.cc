@@ -343,17 +343,17 @@ overlap(MPSt<Tensor> const& psi,
     L *= (H.A(0) ? H.A(0)*H.A(1) : H.A(1));
     L *= dag(prime(psi.A(1)));
     for(int i = 2; i < N; ++i) 
-        { 
+        {	
         L *= phi.A(i); 
         L *= H.A(i); 
-        L *= dag(prime(psi.A(i))); 
+        L *= dag(prime(psi.A(i)));
         }
     L *= phi.A(N); 
     L *= H.A(N);
     if(H.A(N+1)) L *= H.A(N+1);
 
     auto z = (dag(prime(psi.A(N)))*L).cplx();
-    re = z.real();
+	re = z.real();
     im = z.imag();
     }
 template

@@ -124,6 +124,7 @@ davidson(BigMatrixT const& A,
     auto eigs = std::vector<Real>(nget,NAN);
 
     V[0] = phi.front();
+	
     A.product(V[0],AV[0]);
 
     auto initEn = ((dag(V[0])*AV[0]).cplx()).real();
@@ -189,7 +190,7 @@ davidson(BigMatrixT const& A,
                 }
             //printfln("ii=%d, full q = \n%f",ii,q);
             }
-
+		
         //Step C of Davidson (1975)
         //Check convergence
         qnorm = norm(q);
@@ -352,7 +353,7 @@ davidson(BigMatrixT const& A,
         ++iter;
 
         } //for(ii)
-
+	
     done:
 
     for(auto& T : phi)

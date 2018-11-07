@@ -286,13 +286,12 @@ denmatDecomp(Tensor const& AA,
     START_TIMER(8)
     auto iname = args.getString("IndexName",mid ? mid.rawname() : "mid");
     auto cmb = combiner(std::move(cinds),iname);
-    auto ci = cmb.inds().front();
 
+    auto ci = cmb.inds().front();
     auto AAc = cmb * AA;
 
     //Form density matrix
     auto rho = AAc*dag(prime(AAc,ci)); 
-
 
     //Add noise term if requested
     if(noise > 0 && PH)

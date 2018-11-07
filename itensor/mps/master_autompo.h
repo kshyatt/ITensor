@@ -49,7 +49,6 @@ template<> IQMPO toMPO<IQTensor>(const AutoMPO& a, const Args& args);
 template<> MPO toExpH<ITensor>(const AutoMPO& a, Complex tau, const Args& args);
 template<> IQMPO toExpH<IQTensor>(const AutoMPO& a, Complex tau, const Args& args);
 
-
 struct SiteTerm
     {
     std::string op;

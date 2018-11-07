@@ -132,6 +132,7 @@ LIBHEADERS+= $(ITENSOR_INCLUDEDIR)/itensor/mps/localop.h
 LIBHEADERS+= $(ITENSOR_INCLUDEDIR)/itensor/mps/localmpo.h
 LIBHEADERS+= $(ITENSOR_INCLUDEDIR)/itensor/mps/localmpo_mps.h
 LIBHEADERS+= $(ITENSOR_INCLUDEDIR)/itensor/mps/localmposet.h
+LIBHEADERS+= $(ITENSOR_INCLUDEDIR)/itensor/mps/localmposet_mps.h
 localop_test.o: $(LIBHEADERS)
 .debug_objs/localop_test.o: $(LIBHEADERS)
 
